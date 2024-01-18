@@ -10,6 +10,7 @@
 #include "../../info/static_types/fileproc.h"
 #include "../../info/static_types/fileproc_guard.h"
 #include "../kread/kread_sem_open.h"
+#include "kwrite_dup.h"
 
 void kwrite_sem_open_init(struct kfd* kfd);
 void kwrite_sem_open_allocate(struct kfd* kfd, uint64_t id);

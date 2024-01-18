@@ -189,13 +189,6 @@ extern uint64_t off_ipc_port_ip_kobject;
 extern uint64_t off_ipc_space_is_table;
 extern uint64_t off_ipc_entry_ie_object;
 
-extern uint64_t off_vnode_v_nclinks_lh_first;
-extern uint64_t off_vnode_v_name;
-extern uint64_t off_vnode_v_ncchildren_tqh_first;
-
-extern uint64_t off_namecache_nc_child_tqe_prev;
-extern uint64_t off_namecache_nc_vp;
-
 void offset_exporter(void);
 
 #endif /* libkfd_h */

@@ -9,6 +9,7 @@
 #define GPU_CoreSight_h
 
 #include <stdio.h>
+#include "libkfd.h"
 
 void pplwrite_test(void);
 

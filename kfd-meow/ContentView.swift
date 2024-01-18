@@ -82,17 +82,6 @@ struct ContentView: View {
                             }
                         }.disabled(result != 0 || overwritten).frame(minWidth: 0, maxWidth: .infinity)
                         Button(action) {
-                            if(overwritten) {
-                                userspaceReboot()
-                            }
-                            overwrite()
-                            message = message + "[*] overwritten!\n"
-                            result = meow_and_kclose(result)
-                            overwritten = true
-                            action = "uspreboot"
-                            if (result == 0) {
-                                message = message + "[*] kclosed"
-                            }
                         }.disabled(result == 0 && !overwritten).frame(minWidth: 0, maxWidth: .infinity)
                     }.buttonStyle(.bordered)
                 }.listRowBackground(Color.clear)

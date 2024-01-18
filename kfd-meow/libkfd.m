@@ -375,13 +375,6 @@ uint64_t off_ipc_space_is_table     = 0;
 uint64_t off_ipc_entry_ie_object    = 0;
 uint64_t off_ipc_port_ip_kobject    = 0x48;
 
-uint64_t off_vnode_v_ncchildren_tqh_first   = 0x30;
-uint64_t off_vnode_v_nclinks_lh_first       = 0x40;
-uint64_t off_vnode_v_name                   = 0xb8;
-
-uint64_t off_namecache_nc_child_tqe_prev    = 0x0;
-uint64_t off_namecache_nc_vp                = 0x48;
-
 void offset_exporter(void) {
     struct kfd* kfd = ((struct kfd*)_kfd);
     off_pmap_tte = static_offsetof(pmap, tte);
@@ -393,10 +386,6 @@ void offset_exporter(void) {
     off_task_itk_space = dynamic_offsetof(task, itk_space);
     off_ipc_space_is_table  = static_offsetof(ipc_space, is_table);
     off_ipc_entry_ie_object = static_offsetof(ipc_entry, ie_object);
-    
-    if(kfd->info.env.vid <= 11) {
-        off_namecache_nc_child_tqe_prev = 0x10;
-    }
     
     if(kfd->info.env.vid <= 7) {
         off_ipc_port_ip_kobject = 0x58;
