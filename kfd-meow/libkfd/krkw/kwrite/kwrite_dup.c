@@ -50,7 +50,7 @@ bool kwrite_dup_search(struct kfd* kfd, uint64_t object_uaddr)
         /*
          * False alarm: it wasn't one of our fileproc objects.
          */
-        print_warning("failed to find modified fp_flags sentinel");
+        //print_warning("failed to find modified fp_flags sentinel");
     }
 
     return false;
