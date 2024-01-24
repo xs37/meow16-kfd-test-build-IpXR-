@@ -162,11 +162,38 @@ void kclose(uint64_t kfd) {
 }
 
 void kreadbuf_kfd(uint64_t va, void* ua, size_t size) {
-    kread_kfd(_kfd, va, ua, size);
+    uint64_t *v32 = (uint64_t*) ua;
+    
+    while (size) {
+        size_t bytesToRead = (size > 8) ? 8 : size;
+        uint64_t value = kread64_kfd(va);
+        va += 8;
+        
+        if (bytesToRead == 8) {
+            *v32++ = value;
+        } else {
+            memcpy(ua, &value, bytesToRead);
+        }
+        
+        size -= bytesToRead;
+    }
 }
 
 void kwritebuf_kfd(uint64_t va, const void* ua, size_t size) {
-    kwrite_kfd(_kfd, ua, va, size);
+    uint8_t *v8 = (uint8_t*) ua;
+    
+    while (size >= 8) {
+        kwrite64_kfd(va, *(uint64_t*)v8);
+        size -= 8;
+        v8 += 8;
+        va += 8;
+    }
+    
+    if (size) {
+        uint64_t val = kread64_kfd(va);
+        memcpy(&val, v8, size);
+        kwrite64_kfd(va, val);
+    }
 }
 
 uint64_t kread64_kfd(uint64_t va) {

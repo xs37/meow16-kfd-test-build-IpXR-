@@ -1,5 +1,6 @@
-
 #include "kwrite_dup.h"
+
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 
 void kwrite_dup_init(struct kfd* kfd)
 {
