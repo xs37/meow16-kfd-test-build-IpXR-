@@ -11,6 +11,7 @@
 #include <CoreFoundation/CoreFoundation.h>
 
 #include "libkfd.h"
+#include "kcall16.h"
 #include "meowfinder.h"
 
 extern uint64_t kernel_base;
@@ -31,7 +32,11 @@ extern uint64_t data__gCpuTTEP;
 extern uint64_t data__gVirtBase;
 extern uint64_t data__gPhysBase;
 
-extern uint64_t func__proc_set_ucred;
+extern uint64_t add_x0_x0_0x40;
+extern uint64_t proc_set_ucred;
+extern uint64_t container_init;
+extern uint64_t iogettargetand;
+extern uint64_t empty_kdata;
 
 uint64_t proc_get_proc_ro(uint64_t proc_ptr);
 uint64_t proc_ro_get_ucred(uint64_t proc_ro_ptr);

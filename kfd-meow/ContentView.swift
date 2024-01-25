@@ -11,7 +11,7 @@ struct ContentView: View {
     private var puaf_method_options = ["physpuppet", "smith", "landa"]
     @State private var puaf_method = 2
     private var pplrw_options = ["on", "off"]
-    @State private var pplrw_toggle = 1
+    @State private var debug_toggle = 1
     @State private var message = ""
     @State private var action = "overwrite"
     @State private var overwritten = false
@@ -29,7 +29,7 @@ struct ContentView: View {
                             Text(self.puaf_method_options[$0])
                         }
                     }.disabled(result != 0).pickerStyle(SegmentedPickerStyle())
-                    Picker(selection: $pplrw_toggle, label: Text("pplrw:")) {
+                    Picker(selection: $debug_toggle, label: Text("pplrw:")) {
                         ForEach(0 ..< pplrw_options.count, id: \.self) {
                             Text(self.pplrw_options[$0])
                         }
@@ -39,13 +39,12 @@ struct ContentView: View {
                     HStack {
                         Button("kopen") {
                             message = ""
-                            result = kpoen_bridge(UInt64(puaf_method), UInt64(pplrw_toggle))
+                            result = kopen_bridge(UInt64(puaf_method), UInt64(debug_toggle))
                             if (result != 0) {
                                 sleep(1)
                                 message = "[*] kopening\n[*] kslide: " + String(get_kernel_slide(), radix:16) + "\n"
-                                if(pplrw_toggle == 0) {
-                                    message = message + "[*] ppl bypassed!\n"
-                                    result = meow_and_kclose(result)
+                                if(debug_toggle == 0) {
+                                    result = kclose_bridge(result)
                                     if (result == 0) {
                                         message = message + "[*] kclosed\n"
                                     }
@@ -53,7 +52,7 @@ struct ContentView: View {
                             }
                         }.disabled(result != 0).frame(minWidth: 0, maxWidth: .infinity)
                         Button("kclose") {
-                            result = meow_and_kclose(result)
+                            result = kclose_bridge(result)
                             if (result == 0) {
                                 message = message + "[*] kclosed"
                             }

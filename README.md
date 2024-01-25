@@ -8,7 +8,8 @@
  - LinusHenze : Fugu15_Rootful KPF
  - tihmstar : libgrabkernel
  - xina520 : GPU_CoreSight
- - mineek : xpc headers
+ - mineek : xpc headers and KPF
+ - KpwnZ : kcall
 ## tested devices
 
 - d10  15.6.1 physpuppet, smith, landa

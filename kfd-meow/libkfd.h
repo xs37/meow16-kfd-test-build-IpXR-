@@ -148,7 +148,6 @@ void kclose(uint64_t kfd);
 void kreadbuf_kfd(uint64_t va, void* ua, size_t size);
 void kwritebuf_kfd(uint64_t va, const void* ua, size_t size);
 uint64_t kread64_kfd(uint64_t va);
-uint64_t kread64_ptr_kfd(uint64_t kaddr);
 uint32_t kread32_kfd(uint64_t va);
 uint16_t kread16_kfd(uint64_t va);
 uint8_t kread8_kfd(uint64_t va);
@@ -156,6 +155,8 @@ void kwrite64_kfd(uint64_t va, uint64_t val);
 void kwrite32_kfd(uint64_t va, uint32_t val);
 void kwrite16_kfd(uint64_t va, uint16_t val);
 void kwrite8_kfd(uint64_t va, uint8_t val);
+uint64_t kread64_ptr_kfd(uint64_t kaddr);
+uint64_t kread64_smr_kfd(uint64_t va);
 uint64_t get_kernel_proc(void);
 uint64_t get_kernel_task(void);
 uint64_t get_current_proc(void);
@@ -188,6 +189,14 @@ extern uint64_t off_task_itk_space;
 extern uint64_t off_ipc_port_ip_kobject;
 extern uint64_t off_ipc_space_is_table;
 extern uint64_t off_ipc_entry_ie_object;
+
+extern uint64_t off_p_csflags;
+extern uint64_t off_p_uid;
+extern uint64_t off_p_gid;
+extern uint64_t off_p_ruid;
+extern uint64_t off_p_rgid;
+extern uint64_t off_proc_proc_ro;
+extern uint64_t off_task_t_flags;
 
 void offset_exporter(void);
 

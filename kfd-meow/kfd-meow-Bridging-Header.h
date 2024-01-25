@@ -10,13 +10,14 @@
 
 uint64_t _kfd = 0;
 
-uint64_t kpoen_bridge(uint64_t puaf_method, uint64_t pplrw) {
+uint64_t kopen_bridge(uint64_t puaf_method, uint64_t debug) {
     uint64_t exploit_type = (1 << puaf_method);
-    _kfd = kopen(exploit_type, pplrw);
-    if(isarm64e()){
-        offset_exporter();
-        if(pplrw == 0) {
-            sleep(1);
+    _kfd = kopen(exploit_type, debug);
+    offset_exporter();
+    if(debug == 0) {
+        if(!isarm64e()) {
+            meow();
+        } else {
             test_pplrw();
         }
     }
@@ -26,9 +27,7 @@ uint64_t kpoen_bridge(uint64_t puaf_method, uint64_t pplrw) {
     return 0;
 }
 
-uint64_t meow_and_kclose(uint64_t _kfd) {
-    if(!isarm64e() && ((struct kfd*)_kfd)->info.env.vid >= 8)
-        meow();
+uint64_t kclose_bridge(uint64_t _kfd) {
     kclose(_kfd);
     return 0;
 }
