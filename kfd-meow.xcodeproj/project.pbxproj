@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		868BDAB12B2E14260017CB10 /* libmeow.m in Sources */ = {isa = PBXBuildFile; fileRef = 868BDAB02B2E14260017CB10 /* libmeow.m */; };
-		868BDABA2B2E1A890017CB10 /* meowfinder.c in Sources */ = {isa = PBXBuildFile; fileRef = 868BDAB92B2E1A890017CB10 /* meowfinder.c */; };
+		868BDABA2B2E1A890017CB10 /* meowfinder.m in Sources */ = {isa = PBXBuildFile; fileRef = 868BDAB92B2E1A890017CB10 /* meowfinder.m */; };
 		86A48A7B2B2B49CE005D1639 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 86A48A7A2B2B49CE005D1639 /* Assets.xcassets */; };
 		86A48ABC2B2B4A0A005D1639 /* puaf.c in Sources */ = {isa = PBXBuildFile; fileRef = 86A48A892B2B4A0A005D1639 /* puaf.c */; };
 		86A48ABD2B2B4A0A005D1639 /* perf.m in Sources */ = {isa = PBXBuildFile; fileRef = 86A48A8A2B2B4A0A005D1639 /* perf.m */; };
@@ -51,7 +51,7 @@
 		868BDAB02B2E14260017CB10 /* libmeow.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = libmeow.m; sourceTree = "<group>"; };
 		868BDAB22B2E14410017CB10 /* libmeow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = libmeow.h; sourceTree = "<group>"; };
 		868BDAB82B2E1A840017CB10 /* meowfinder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = meowfinder.h; sourceTree = "<group>"; };
-		868BDAB92B2E1A890017CB10 /* meowfinder.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = meowfinder.c; sourceTree = "<group>"; };
+		868BDAB92B2E1A890017CB10 /* meowfinder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = meowfinder.m; sourceTree = "<group>"; };
 		86A48A6B2B2B49CD005D1639 /* kfd-meow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "kfd-meow.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		86A48A7A2B2B49CE005D1639 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		86A48A7F2B2B49CE005D1639 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -186,15 +186,15 @@
 				868BDAB22B2E14410017CB10 /* libmeow.h */,
 				868BDAB02B2E14260017CB10 /* libmeow.m */,
 				868BDAB82B2E1A840017CB10 /* meowfinder.h */,
-				868BDAB92B2E1A890017CB10 /* meowfinder.c */,
+				868BDAB92B2E1A890017CB10 /* meowfinder.m */,
 				D5123A032B4C40BD0040BF9D /* pplrw.h */,
 				D5123A012B4C40B10040BF9D /* pplrw.m */,
 				D5123A042B4C41040040BF9D /* IOSurface_Primitives.h */,
 				D5123A052B4C41040040BF9D /* IOSurface_Primitives.m */,
-				D576DF712B5FFE23004C3933 /* hexdump.h */,
-				D576DF702B5FFE23004C3933 /* hexdump.c */,
 				D5B5FF852B622AC200B53629 /* kcall16.h */,
 				D5B5FF842B622AC200B53629 /* kcall16.m */,
+				D576DF712B5FFE23004C3933 /* hexdump.h */,
+				D576DF702B5FFE23004C3933 /* hexdump.c */,
 				D5D2DDB72B4832E600B62BED /* fugufinder.swift */,
 				D56FB69F2B499B0C00A48CA4 /* kfd-meow.swift */,
 				D56FB6A12B499B7000A48CA4 /* ContentView.swift */,
@@ -463,7 +463,7 @@
 				D5BF82E12B53B09800C02D17 /* kread_kqueue_workloop_ctl.c in Sources */,
 				86A48AC22B2B4A0A005D1639 /* smith.c in Sources */,
 				D576DF722B5FFE23004C3933 /* hexdump.c in Sources */,
-				868BDABA2B2E1A890017CB10 /* meowfinder.c in Sources */,
+				868BDABA2B2E1A890017CB10 /* meowfinder.m in Sources */,
 				868BDAB12B2E14260017CB10 /* libmeow.m in Sources */,
 				86A48AC12B2B4A0A005D1639 /* kwrite_IOSurface.c in Sources */,
 				86A48AC52B2B4A0A005D1639 /* libkfd.m in Sources */,

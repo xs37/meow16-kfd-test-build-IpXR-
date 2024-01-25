@@ -10,8 +10,10 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 
+#include "pplrw.h"
 #include "libkfd.h"
 #include "kcall16.h"
+#include "hexdump.h"
 #include "meowfinder.h"
 
 extern uint64_t kernel_base;
@@ -19,7 +21,7 @@ extern uint64_t kernel_slide;
 
 extern uint64_t our_task;
 extern uint64_t our_proc;
-extern uint64_t kernel_task;
+extern uint64_t kern_task;
 extern uint64_t kernproc;
 extern uint64_t our_ucred;
 extern uint64_t kern_ucred;

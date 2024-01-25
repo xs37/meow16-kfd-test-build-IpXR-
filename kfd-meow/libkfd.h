@@ -195,8 +195,11 @@ extern uint64_t off_p_uid;
 extern uint64_t off_p_gid;
 extern uint64_t off_p_ruid;
 extern uint64_t off_p_rgid;
+extern uint64_t off_proc_ucred;
 extern uint64_t off_proc_proc_ro;
 extern uint64_t off_task_t_flags;
+extern uint64_t off_p_ro_t_flags_ro;
+extern uint64_t off_p_ro_p_csflags;
 
 void offset_exporter(void);
 

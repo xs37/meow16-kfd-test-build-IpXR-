@@ -1,6 +1,8 @@
 
 #include "kread_kqueue_workloop_ctl.h"
 
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 const uint64_t kread_kqueue_workloop_ctl_sentinel = 0x1122334455667788;
 
 void kread_kqueue_workloop_ctl_init(struct kfd* kfd)

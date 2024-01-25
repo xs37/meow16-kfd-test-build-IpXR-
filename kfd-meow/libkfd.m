@@ -415,8 +415,11 @@ uint64_t off_p_uid      = 0x2c;
 uint64_t off_p_gid      = 0x30;
 uint64_t off_p_ruid     = 0x34;
 uint64_t off_p_rgid     = 0x38;
-uint64_t off_proc_proc_ro = 0x18;
-uint64_t off_task_t_flags = 0x3e8;
+uint64_t off_proc_ucred = 0;
+uint64_t off_proc_proc_ro    = 0x18;
+uint64_t off_task_t_flags    = 0x3e8;
+uint64_t off_p_ro_t_flags_ro = 0x78;
+uint64_t off_p_ro_p_csflags  = 0x1c;
 
 void offset_exporter(void) {
     struct kfd* kfd = ((struct kfd*)_kfd);
@@ -435,9 +438,10 @@ void offset_exporter(void) {
     }
     if(kfd->info.env.vid <= 5) {
         off_ipc_port_ip_kobject = 0x58;
-        off_p_csflags = 0x300;
+        off_p_csflags           = 0x300;
     }
     if(kfd->info.env.vid <= 3) {
-        off_task_itk_space = 0x330;
+        off_task_itk_space  = 0x330;
+        off_proc_ucred      = 0xd8;
     }
 }

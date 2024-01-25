@@ -308,12 +308,12 @@ void offsetfinder64_kread(void)
         printf("iogettargetand : %016llx\n", iogettargetand);
     } else if(isAvailable() >= 4) {
         proc_set_ucred = search_proc_set_ucred_kread15(text_exec_addr, text_exec_size);
+        printf("proc_set_ucred : %016llx\n", proc_set_ucred);
     }
     
     empty_kdata    = data_data_addr + 0x1600;
     //empty_kdata     = 0xFFFFFFF007841000 + 0x200;
     
     printf("add_x0_x0_0x40 : %016llx\n", add_x0_x0_0x40);
-    printf("proc_set_ucred : %016llx\n", proc_set_ucred);
     printf("empty_kdata    : %016llx\n", empty_kdata);
 }

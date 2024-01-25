@@ -4,6 +4,8 @@
 
 #include "kread_sem_open.h"
 
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 const char* kread_sem_open_name = "kfd-posix-semaphore";
 
 void kread_sem_open_init(struct kfd* kfd)
