@@ -137,7 +137,6 @@ extern uint64_t _kfd;
 
 bool isarm64e(void);
 int isAvailable(void);
-int ischip(void);
 
 struct kfd* kfd_init(uint64_t exploit_type);
 void kfd_free(struct kfd* kfd);

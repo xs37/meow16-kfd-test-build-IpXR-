@@ -75,25 +75,6 @@ int isAvailable(void) {
     return -1;
 }
 
-int ischip(void) {
-    cpu_subtype_t cpuFamily = 0;
-    size_t cpuFamilySize = sizeof(cpuFamily);
-    sysctlbyname("hw.cpufamily", &cpuFamily, &cpuFamilySize, NULL, 0);
-    printf("%x\n", cpuFamily);
-    
-    int ret = 0;
-
-    switch (cpuFamily) {
-        case 0x8765EDEA: // A16
-        ret = 16;
-        break;
-        case 0xDA33D83D: // A15
-        ret = 15;
-        break;
-    }
-    return ret;
-}
-
 struct kfd* kfd_init(uint64_t exploit_type) {
     struct kfd* kfd = (struct kfd*)(malloc_bzero(sizeof(struct kfd)));
     info_init(kfd);

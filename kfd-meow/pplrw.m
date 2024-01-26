@@ -13,7 +13,7 @@ struct shit_map {
     uint8_t *map;
 };
 
-bool isa15a16 = false;
+bool nonewmap = false;
 uint64_t base6040000 = 0;
 uint64_t base6140000 = 0;
 uint64_t base6150000 = 0;
@@ -22,6 +22,25 @@ uint64_t base6040000_bak = 0;
 
 #define CACHED_MAP_LEN 20
 struct shit_map gCachedMap[CACHED_MAP_LEN];
+
+bool isa15a16(void)
+{
+    cpu_subtype_t cpuFamily = 0;
+    size_t cpuFamilySize = sizeof(cpuFamily);
+    sysctlbyname("hw.cpufamily", &cpuFamily, &cpuFamilySize, NULL, 0);
+    
+    bool ret = false;
+
+    switch (cpuFamily) {
+        case 0x8765EDEA: // A16
+        ret = true;
+        break;
+        case 0xDA33D83D: // A15
+        ret = true;
+        break;
+    }
+    return ret;
+}
 
 void mapping(void)
 {
@@ -47,11 +66,11 @@ void addMapping(uint64_t addr)
 
 void physwrite64_mapped(uint64_t addr, uint64_t val)
 {
-    if(isa15a16 && isAvailable() >= 8 && addr >= 0x206040000 && addr - 0x206040000 <= 0x100) {
+    if(isa15a16() && isAvailable() >= 8 && addr >= 0x206040000 && addr - 0x206040000 <= 0x100 && nonewmap) {
         *(uint64_t *)(base6040000 + addr - 0x206040000) = val;
-    } else if(isa15a16 && isAvailable() >= 8 && addr >= 0x206140000 && addr - 0x206140000 <= 0x200) {
+    } else if(isa15a16() && isAvailable() >= 8 && addr >= 0x206140000 && addr - 0x206140000 <= 0x200 && nonewmap) {
         *(uint64_t *)(base6140000 + addr - 0x206140000) = val;
-    } else if(isa15a16 && isAvailable() >= 8 && addr >= 0x206150000 && addr - 0x206150000 <= 0x100) {
+    } else if(isa15a16() && isAvailable() >= 8 && addr >= 0x206150000 && addr - 0x206150000 <= 0x100 && nonewmap) {
         *(uint64_t *)(base6150000 + addr - 0x206150000) = val;
     } else {
         addMapping(addr);
@@ -68,11 +87,11 @@ void physwrite64_mapped(uint64_t addr, uint64_t val)
 
 uint64_t physread64_mapped(uint64_t addr)
 {
-    if(isa15a16 && isAvailable() >= 8 && addr >= 0x206040000 && addr - 0x206040000 <= 0x200) {
+    if(isa15a16() && isAvailable() >= 8 && addr >= 0x206040000 && addr - 0x206040000 <= 0x200 && nonewmap) {
         return *(uint64_t *)(base6140000 + addr - 0x206140000);
-    } else if(isa15a16 && isAvailable() >= 8 && addr >= 0x206140000 && addr - 0x206140000 <= 0x200) {
+    } else if(isa15a16() && isAvailable() >= 8 && addr >= 0x206140000 && addr - 0x206140000 <= 0x200 && nonewmap) {
         return *(uint64_t *)(base6140000 + addr - 0x206140000);
-    } else if(isa15a16 && isAvailable() >= 8 && addr >= 0x206150000 && addr - 0x206150000 <= 0x100) {
+    } else if(isa15a16() && isAvailable() >= 8 && addr >= 0x206150000 && addr - 0x206150000 <= 0x100 && nonewmap) {
         return *(uint64_t *)(base6150000 + addr - 0x206150000);
     } else {
         addMapping(addr);
@@ -90,11 +109,11 @@ uint64_t physread64_mapped(uint64_t addr)
 
 void physwrite32_mapped(uint64_t addr, uint32_t val)
 {
-    if(isa15a16 && isAvailable() >= 8 && addr >= 0x206040000 && addr - 0x206040000 <= 0x100) {
+    if(isa15a16() && isAvailable() >= 8 && addr >= 0x206040000 && addr - 0x206040000 <= 0x100 && nonewmap) {
         *(uint32_t *)(base6040000 + addr - 0x206040000) = val;
-    } else if(isa15a16 && isAvailable() >= 8 && addr >= 0x206140000 && addr - 0x206140000 <= 0x200) {
+    } else if(isa15a16() && isAvailable() >= 8 && addr >= 0x206140000 && addr - 0x206140000 <= 0x200 && nonewmap) {
         *(uint32_t *)(base6140000 + addr - 0x206140000) = val;
-    } else if(isa15a16 && isAvailable() >= 8 && addr >= 0x206150000 && addr - 0x206150000 <= 0x100) {
+    } else if(isa15a16() && isAvailable() >= 8 && addr >= 0x206150000 && addr - 0x206150000 <= 0x100 && nonewmap) {
         *(uint32_t *)(base6150000 + addr - 0x206150000) = val;
     } else {
         addMapping(addr);
@@ -112,11 +131,11 @@ void physwrite32_mapped(uint64_t addr, uint32_t val)
 
 uint32_t physread32_mapped(uint64_t addr)
 {
-    if(isa15a16 && isAvailable() >= 8 && addr >= 0x206040000 && addr - 0x206040000 <= 0x100) {
+    if(isa15a16() && isAvailable() >= 8 && addr >= 0x206040000 && addr - 0x206040000 <= 0x100 && nonewmap) {
         return *(uint32_t *)(base6040000 + addr - 0x206040000);
-    } else if(isa15a16 && isAvailable() >= 8 && addr >= 0x206140000 && addr - 0x206140000 <= 0x200) {
+    } else if(isa15a16() && isAvailable() >= 8 && addr >= 0x206140000 && addr - 0x206140000 <= 0x200 && nonewmap) {
         return *(uint32_t *)(base6140000 + addr - 0x206140000);
-    } else if(isa15a16 && isAvailable() >= 8 && addr >= 0x206150000 && addr - 0x206150000 <= 0x100) {
+    } else if(isa15a16() && isAvailable() >= 8 && addr >= 0x206150000 && addr - 0x206150000 <= 0x100 && nonewmap) {
         return *(uint32_t *)(base6150000 + addr - 0x206150000);
     } else {
         addMapping(addr);
@@ -138,8 +157,8 @@ void ml_dbgwrap_halt_cpu(void)
         return;
     }
     
-    if(isa15a16 && isAvailable() >= 8) {
-        physwrite64_mapped(0x206040000, base6040000_bak | (1 << 31));
+    if(isa15a16() && isAvailable() >= 8 && !nonewmap) {
+        *(uint64_t *)base6040000 = base6040000_bak | (1ULL << 31);
     } else {
         physwrite64_mapped(0x206040000, physread64_mapped(0x206040000) | (1 << 31));
     }
@@ -149,6 +168,11 @@ void ml_dbgwrap_halt_cpu(void)
 
 void ml_dbgwrap_unhalt_cpu(void)
 {
+    if(isa15a16() && isAvailable() >= 8 && !nonewmap) {
+        *(uint64_t *)base6040000 = base6040000_bak;
+    } else {
+        physwrite64_mapped(0x206040000, ((physread64_mapped(0x206040000) & 0xFFFFFFFF2FFFFFFF) | 0x40000000));
+    }
     physwrite64_mapped(0x206040000, ((physread64_mapped(0x206040000) & 0xFFFFFFFF2FFFFFFF) | 0x40000000));
     if ((physread64_mapped(0x206040000) & 0x90000000) != 0) {
         return;
@@ -169,12 +193,10 @@ void gfx_power_init(void)
         case 0x8765EDEA: // A16
         base = 0x23B700408;
         command = 0x1F0023FF;
-        isa15a16 = true;
         break;
         case 0xDA33D83D: // A15
         base = 0x23B7003C8;
         command = 0x1F0023FF;
-        isa15a16 = true;
         break;
         case 0x1B588BB3: // A14
         base = 0x23B7003D0;
@@ -448,18 +470,21 @@ void dma_writevirt8(uint64_t pa, uint8_t val)
 
 void dma_perform(void (^block)(void))
 {
-    mapping();
-    gfx_power_init();
-    if(isa15a16) {
+    if(!isa15a16()) {
+        gfx_power_init();
+    } else {
         if(isAvailable() >= 8) {
+            printf("a15a16\n");
+            mapping();
+            nonewmap = true;
+            gfx_power_init();
+            base6040000_bak = *(uint64_t *)base6040000;
             uint64_t base6150020 = base6150000 + 0x20;
             *(uint64_t *)base6150020 = 1;
-            char buf[sizeof(uint64_t)] = {
-                *(uint64_t *)(base6150020),
-            };
+            char buf[sizeof(uint64_t)] = {*(uint64_t *)(base6150020)};
             hexdump(buf, sizeof(buf));
-            base6040000_bak = physread64_mapped(0x206040000);
         } else {
+            gfx_power_init();
             physwrite64_mapped(0x206150020, 1);
         }
     }
@@ -468,7 +493,7 @@ void dma_perform(void (^block)(void))
     block();
     
     ml_dbgwrap_unhalt_cpu();
-    if(isa15a16) {
+    if(isa15a16()) {
         if(isAvailable() >= 8) {
             uint64_t base6150020 = base6150000 + 0x20;
             *(uint64_t *)base6150020 = 0;

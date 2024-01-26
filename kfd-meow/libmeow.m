@@ -67,8 +67,13 @@ uint64_t proc_get_ucred(uint64_t proc_ptr) {
         return kread64_ptr_kfd(proc_ptr + off_proc_ucred);
     return proc_ro_get_ucred(proc_get_proc_ro(proc_ptr));
 }
-
-
+/*#========= PROGRESS =========
+ *# kcall:    arm64  15.0 - 16.7
+ *#           arm64e 15.0 - 15.7
+ *# unsandbx: arm64  15.1 - 16.7 (untested 15.0-15.1)
+ *#           arm64e
+ *#============================
+ */
 void getroot(void) {
     printf("access(%s) : %d\n", "/var/root/Library", access("/var/root/Library", R_OK));
     if(isAvailable() >= 4) {

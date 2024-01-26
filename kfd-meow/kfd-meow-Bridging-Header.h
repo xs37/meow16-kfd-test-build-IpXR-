@@ -15,9 +15,12 @@ uint64_t kopen_bridge(uint64_t puaf_method, uint64_t debug) {
     _kfd = kopen(exploit_type, debug);
     offset_exporter();
     if(debug == 0) {
-        //if(isarm64e())
-        //    test_pplrw();
-        meow();
+        if(isarm64e()) {
+            sleep(1);
+            test_pplrw();
+        } else {
+            meow();
+        }
     }
     if(_kfd != 0)
         return _kfd;
