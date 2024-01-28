@@ -3,10 +3,10 @@
     {
       "identity" : "patchfinderutils",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/pinauten/PatchfinderUtils",
+      "location" : "https://github.com/m1zole/PatchfinderUtils",
       "state" : {
         "branch" : "master",
-        "revision" : "68f6e7f430d94bc01315b0f1e753e3764b9cc31d"
+        "revision" : "e14f0107b5b3e5c1ff3ba1b19115d7dcbf121ebd"
       }
     },
     {

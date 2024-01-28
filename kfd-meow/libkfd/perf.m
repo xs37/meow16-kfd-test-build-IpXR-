@@ -3,6 +3,7 @@
  */
 
 #include "perf.h"
+#include "kfd_meow-Swift.h"
 
 uint64_t kaddr_vn_kqfilter = 0;
 uint64_t kaddr_vm_pages = 0;

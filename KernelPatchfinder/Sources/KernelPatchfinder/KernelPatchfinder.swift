@@ -12,6 +12,8 @@ import PatchfinderUtils
 import Darwin
 
 open class KernelPatchfinder {
+    public var isarm64e: Bool = true
+    
     public let kernel: MachO!
     
     public let cachedResults: [String: UInt64]?
@@ -572,40 +574,63 @@ open class KernelPatchfinder {
             return cachedResults.unsafelyUnwrapped["kalloc_data_external"]
         }
         
-        // For kalloc, find "AMFI: %s: Failed to allocate memory for fatal error message, cannot produce a crash reason."
-        // The first bl in the function will be to kalloc_data_external
-        guard let amfi_fatal_err_str = cStrSect.addrOf("AMFI: %s: Failed to allocate memory for fatal error message, cannot produce a crash reason.") else {
-            return nil
-        }
-        
-        guard var amfi_fatal_err_func = textExec.findNextXref(to: amfi_fatal_err_str, optimization: .noBranches) else {
-            return nil
-        }
-        
-        var amfi_fatal_err_func_start: UInt64!
-        for i in 1..<300 {
-            let pos = amfi_fatal_err_func - UInt64(i * 4)
-            if AArch64Instr.isPacibsp(textExec.instruction(at: pos) ?? 0) {
-                amfi_fatal_err_func_start = pos
-                break
+        if(isarm64e) {
+            
+            // For kalloc, find "AMFI: %s: Failed to allocate memory for fatal error message, cannot produce a crash reason."
+            // The first bl in the function will be to kalloc_data_external
+            guard let amfi_fatal_err_str = cStrSect.addrOf("AMFI: %s: Failed to allocate memory for fatal error message, cannot produce a crash reason.") else {
+                return nil
             }
-        }
-        
-        guard amfi_fatal_err_func_start != nil else {
-            return nil
-        }
-        
-        var kalloc_external: UInt64!
-        for i in 1..<20 {
-            let pc = amfi_fatal_err_func_start + UInt64(i * 4)
-            let target = AArch64Instr.Emulate.bl(textExec.instruction(at: pc) ?? 0, pc: pc)
-            if target != nil {
-                kalloc_external = target
-                break
+            
+            guard var amfi_fatal_err_func = textExec.findNextXref(to: amfi_fatal_err_str, optimization: .noBranches) else {
+                return nil
             }
+            
+            var amfi_fatal_err_func_start: UInt64!
+            for i in 1..<300 {
+                let pos = amfi_fatal_err_func - UInt64(i * 4)
+                if AArch64Instr.isPacibsp(textExec.instruction(at: pos) ?? 0) {
+                    amfi_fatal_err_func_start = pos
+                    break
+                }
+            }
+            
+            guard amfi_fatal_err_func_start != nil else {
+                return nil
+            }
+            
+            var kalloc_external: UInt64!
+            for i in 1..<20 {
+                let pc = amfi_fatal_err_func_start + UInt64(i * 4)
+                let target = AArch64Instr.Emulate.bl(textExec.instruction(at: pc) ?? 0, pc: pc)
+                if target != nil {
+                    kalloc_external = target
+                    break
+                }
+            }
+            
+            return kalloc_external
+        } else {
+            return textExec.addrOf([0xAA0003E8, 0x52820002, 0x72A003A2, 0x33000822])
         }
-        
-        return kalloc_external
+    }()
+    
+    /// Address of the `kfree_data_external` function
+    public lazy var kfree_data_external: UInt64? = {
+        if cachedResults != nil {
+            return cachedResults.unsafelyUnwrapped["kfree_data_external"]
+        }
+        if(isarm64e) {
+            return nil
+        } else {
+            let cmp_ccmp_blo = textExec.addrOf([0xEB03011F, 0xFA429100, 0x540000A3])
+            var ret = textExec.addrOf([0xAA0103E2, 0xAA0003E1], startAt: cmp_ccmp_blo)
+            if(ret == nil) {
+                let umaddl_x11_w11_w10_x9 = textExec.addrOf([0x9BAA256B, 0xB940056D, 0x1100058B, 0xEB0301BF, 0x54FFFF63])
+                ret = textExec.addrOf([0xAA0103E2, 0xAA0003E1], startAt: umaddl_x11_w11_w10_x9)
+            }
+            return ret
+        }
     }()
     
     /// Address of the `ml_sign_thread_state` function
@@ -615,6 +640,51 @@ open class KernelPatchfinder {
         }
         
         return textExec.addrOf([0x9AC03021, 0x9262F842, 0x9AC13041, 0x9AC13061, 0x9AC13081, 0x9AC130A1, 0xF9009401, 0xD65F03C0])
+    }()
+    
+    /// Address of the `ml_phys_read_data` function
+    public lazy var ml_phys_read_data: UInt64? = {
+        if cachedResults != nil {
+            return cachedResults.unsafelyUnwrapped["ml_phys_read_data"]
+        }
+        
+        return textExec.addrOf([0xD10183FF, 0xA9025FF8, 0xA90357F6, 0xA9044FF4, 0xA9057BFD, 0x910143FD, 0xAA0003F4, 0xD34EFC15])
+    }()
+    
+    /// Address of the `ml_phys_write_data` function
+    public lazy var ml_phys_write_data: UInt64? = {
+        if cachedResults != nil {
+            return cachedResults.unsafelyUnwrapped["ml_phys_write_data"]
+        }
+        
+        return textExec.addrOf([0xD10183FF, 0xA9025FF8, 0xA90357F6, 0xA9044FF4, 0xA9057BFD, 0x910143FD, 0xAA0003F5, 0xD34EFC16, 0x8B224008, 0xD1000508])
+    }()
+    
+    public lazy var mach_vm_allocate: UInt64? = {
+        
+        guard let launchdString = cStrSect.addrOf("/sbin/launchd") else {
+            print("no launchd string")
+            return nil
+        }
+        
+        guard let launchdStringXREF = textExec.findNextXref(to: launchdString, optimization: .noBranches) else {
+            return nil
+        }
+        
+        var pc = launchdStringXREF
+        
+        var found1: Bool = false
+        for i in 1..<50 {
+            let inst = textExec.instruction(at: pc - UInt64(i * 4)) ?? 0
+            if let branch = AArch64Instr.Emulate.bl(inst, pc: pc - UInt64(i * 4)) {
+                if found1 {
+                    return branch
+                }
+                found1 = true
+            }
+        }
+        
+        return nil
     }()
     
     /// Address of the ppl handler table
@@ -1228,17 +1298,31 @@ open class KernelPatchfinder {
         }
         
         let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].path
-        let kernel = documents + "/kernel.img4"
+        var kernel = documents + "/kernel.img4"
         
-        guard let k = loadImg4Kernel(path: kernel) else {
-            return nil
+        if FileManager.default.fileExists(atPath: kernel) {
+            guard let k = loadImg4Kernel(path: kernel) else {
+                return nil
+            }
+            
+            guard let machO = try? MachO(fromData: k, okToLoadFAT: false) else {
+                return nil
+            }
+            
+            return KernelPatchfinder(kernel: machO)
+        } else {
+            kernel = documents + "/fatkernel.img4"
+            
+            guard let k = loadImg4Kernel(path: kernel) else {
+                return nil
+            }
+            
+            guard let machO = try? MachO(fromData: k, okToLoadFAT: true) else {
+                return nil
+            }
+            
+            return KernelPatchfinder(kernel: machO)
         }
-        
-        guard let machO = try? MachO(fromData: k, okToLoadFAT: false) else {
-            return nil
-        }
-        
-        return KernelPatchfinder(kernel: machO)
     }()
     
     /// Initialize patchfinder for the given kernel.
@@ -1262,15 +1346,17 @@ open class KernelPatchfinder {
             return nil
         }
         
-        guard let pplText = kernel.pfSection(segment: "__PPLTEXT", section: "__text") else {
-            return nil
-        }
+        let pplText = kernel.pfSection(segment: "__PPLTEXT", section: "__text") ?? nil
         
         self.textExec  = textExec
         self.cStrSect  = cStrSect
         self.dataSect  = dataSect
         self.constSect = constSect
         self.pplText   = pplText
+        
+        if (self.pplText == nil) {
+            self.isarm64e = false
+        }
         
         var baseAddress: UInt64 = UInt64.max
         var entryPoint: UInt64?

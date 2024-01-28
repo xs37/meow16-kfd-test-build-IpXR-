@@ -36,18 +36,6 @@ typedef struct {
 typedef uint64_t kaddr_t;
 typedef kern_return_t (*kread_func_t)(kaddr_t, void *, size_t), (*kwrite_func_t)(kaddr_t, const void *, size_t);
 
-void
-dimentio_term(void);
-
-kern_return_t
-dimentio_init(kaddr_t, kread_func_t, kwrite_func_t);
-
-kern_return_t
-dimentio(uint64_t *, bool, uint8_t[CC_SHA384_DIGEST_LENGTH], size_t *);
-
-kern_return_t
-dimentio_preinit(uint64_t *, bool, uint8_t[CC_SHA384_DIGEST_LENGTH], size_t *);
-
 kern_return_t
 pfinder_init(pfinder_t *pfinder);
 

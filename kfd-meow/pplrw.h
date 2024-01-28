@@ -12,9 +12,10 @@
 #import <dlfcn.h>
 #import <mach-o/dyld.h>
 #import <sys/sysctl.h>
-#include "hexdump.h"
-#include "IOSurface_Primitives.h"
 #include "libkfd.h"
+#include "hexdump.h"
+#include "pplrw-by-xina.h"
+#include "IOSurface_Primitives.h"
 
 int test_pplrw(void);
 int test_ktrr(void);

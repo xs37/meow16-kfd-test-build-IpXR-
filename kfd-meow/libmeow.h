@@ -10,9 +10,10 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 
+#include "kcall.h"
+#include "troll.h"
 #include "pplrw.h"
 #include "libkfd.h"
-#include "kcall16.h"
 #include "hexdump.h"
 #include "meowfinder.h"
 
@@ -39,6 +40,9 @@ extern uint64_t proc_set_ucred;
 extern uint64_t container_init;
 extern uint64_t iogettargetand;
 extern uint64_t empty_kdata;
+extern uint64_t mach_vm_alloc;
+
+void set_offsets(void);
 
 uint64_t proc_get_proc_ro(uint64_t proc_ptr);
 uint64_t proc_ro_get_ucred(uint64_t proc_ro_ptr);

@@ -36,14 +36,14 @@ void krkw_init(struct kfd* kfd)
         kfd->kwrite.krkw_method_ops.deallocate = kwrite_IOSurface_deallocate;
         kfd->kwrite.krkw_method_ops.free = kwrite_IOSurface_free;
     } else {
-        kfd->kwrite.krkw_method_ops.init = kwrite_dup_init;
-        kfd->kwrite.krkw_method_ops.allocate = kwrite_dup_allocate;
-        kfd->kwrite.krkw_method_ops.search = kwrite_dup_search;
+        kfd->kwrite.krkw_method_ops.init = kwrite_sem_open_init;
+        kfd->kwrite.krkw_method_ops.allocate = kwrite_sem_open_allocate;
+        kfd->kwrite.krkw_method_ops.search = kwrite_sem_open_search;
         kfd->kwrite.krkw_method_ops.kread = NULL;
-        kfd->kwrite.krkw_method_ops.kwrite = kwrite_dup_kwrite;
-        kfd->kwrite.krkw_method_ops.find_proc = kwrite_dup_find_proc;
-        kfd->kwrite.krkw_method_ops.deallocate = kwrite_dup_deallocate;
-        kfd->kwrite.krkw_method_ops.free = kwrite_dup_free;
+        kfd->kwrite.krkw_method_ops.kwrite = kwrite_sem_open_kwrite;
+        kfd->kwrite.krkw_method_ops.find_proc = kwrite_sem_open_find_proc;
+        kfd->kwrite.krkw_method_ops.deallocate = kwrite_sem_open_deallocate;
+        kfd->kwrite.krkw_method_ops.free = kwrite_sem_open_free;
     }
     
     krkw_helper_init(kfd, &kfd->kread);

@@ -2,7 +2,7 @@
 
 ## credits
  - felix-pb : kfd
- - opa334 : IOSurface kwrite method, pplrw and IOSurface_primitives
+ - opa334 : IOSurface kwrite method, pplrw, PersistenceHelper_Embedded and IOSurface_primitives
  - checkra1n : pongoOS
  - wh1te4ever : offsets, GPU_CoreSight fork and dynamic KPF
  - LinusHenze : Fugu15_Rootful KPF
@@ -10,6 +10,8 @@
  - xina520 : GPU_CoreSight
  - mineek : xpc headers and KPF
  - KpwnZ : kcall
+ - NSAntoine : KPF and kalloc technic
+ - evelyneee : KPF and kalloc technic
 ## tested devices
 
 - d10  15.6.1 physpuppet, smith, landa

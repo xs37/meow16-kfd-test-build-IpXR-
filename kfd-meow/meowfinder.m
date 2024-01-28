@@ -6,6 +6,7 @@
 //
 
 #include "meowfinder.h"
+#include "kfd_meow-Swift.h"
 
 static unsigned char header[0x4000];
 
@@ -316,4 +317,9 @@ void offsetfinder64_kread(void)
     
     printf("add_x0_x0_0x40 : %016llx\n", add_x0_x0_0x40);
     printf("empty_kdata    : %016llx\n", empty_kdata);
+}
+
+void Fugu15KPF(void) {
+    objcbridge *obj = [[objcbridge alloc] init];
+    mach_vm_alloc = [obj find_mach_vm_allocate];
 }

@@ -14,5 +14,6 @@
 #include "libmeow.h"
 
 void offsetfinder64_kread(void);
+void Fugu15KPF(void);
 
 #endif /* meowfinder_h */

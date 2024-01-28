@@ -157,23 +157,26 @@ void ml_dbgwrap_halt_cpu(void)
         return;
     }
     
-    if(isa15a16() && isAvailable() >= 8 && !nonewmap) {
-        *(uint64_t *)base6040000 = base6040000_bak | (1ULL << 31);
+    if(isa15a16() && isAvailable() >= 8 && nonewmap) {
+        uint64_t dbgWrapReg = *(uint64_t *)base6040000;
+        *(uint64_t *)base6040000 = dbgWrapReg | (1ULL << 31);
+        while ((*(uint64_t *)base6040000 & (1ULL << 28)) == 0) { }
     } else {
         physwrite64_mapped(0x206040000, physread64_mapped(0x206040000) | (1 << 31));
+        while ((physread64_mapped(0x206040000) & 0x10000000) == 0) { }
     }
-
-    while ((physread64_mapped(0x206040000) & 0x10000000) == 0) { }
 }
 
 void ml_dbgwrap_unhalt_cpu(void)
 {
-    if(isa15a16() && isAvailable() >= 8 && !nonewmap) {
-        *(uint64_t *)base6040000 = base6040000_bak;
+    if(isa15a16() && isAvailable() >= 8 && nonewmap) {
+        uint64_t dbgWrapReg = *(uint64_t *)base6040000;
+        dbgWrapReg = (dbgWrapReg & 0xFFFFFFFF2FFFFFFF) | 0x40000000;
+        *(uint64_t *)base6040000 = dbgWrapReg;
     } else {
         physwrite64_mapped(0x206040000, ((physread64_mapped(0x206040000) & 0xFFFFFFFF2FFFFFFF) | 0x40000000));
     }
-    physwrite64_mapped(0x206040000, ((physread64_mapped(0x206040000) & 0xFFFFFFFF2FFFFFFF) | 0x40000000));
+    
     if ((physread64_mapped(0x206040000) & 0x90000000) != 0) {
         return;
     }
@@ -324,7 +327,6 @@ uint64_t calculate_hash(uint64_t buffer)
     }
     return acc;
 }
-
 
 void dma_writephys512(uint64_t targetPA, uint64_t *value)
 {
@@ -478,10 +480,9 @@ void dma_perform(void (^block)(void))
             mapping();
             nonewmap = true;
             gfx_power_init();
-            base6040000_bak = *(uint64_t *)base6040000;
             uint64_t base6150020 = base6150000 + 0x20;
             *(uint64_t *)base6150020 = 1;
-            char buf[sizeof(uint64_t)] = {*(uint64_t *)(base6150020)};
+            char buf[sizeof(uint64_t)] = {*(uint64_t *)base6150020};
             hexdump(buf, sizeof(buf));
         } else {
             gfx_power_init();
@@ -560,6 +561,10 @@ bool test_pplrw_virt(void)
 
 int test_pplrw(void)
 {
+    if(isa15a16() && isAvailable() >= 8) {
+        printf("running xina's pplwrite...\n");
+        return pplwrite_test();
+    }
     if (test_pplrw_phys()) {
         printf("test_pplrw_phys: success!\n");
     }
