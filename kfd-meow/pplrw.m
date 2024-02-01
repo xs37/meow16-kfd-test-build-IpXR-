@@ -485,10 +485,6 @@ bool test_pplrw_virt(void)
 
 int test_pplrw(void)
 {
-    if(isa15a16()) {
-        printf("running xina's pplwrite...\n");
-        return pplwrite_test();
-    }
     if (test_pplrw_phys()) {
         printf("test_pplrw_phys: success!\n");
     }
