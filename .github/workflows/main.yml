@@ -1,0 +1,32 @@
+name: compile app  
+on:
+  pull_request:
+    branches: [ meow ]
+  push:
+    branches: [ meow ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        platform:
+          - iOS Simulator
+          - iOS
+          - placeholder
+    steps:
+    - name: checkout
+      uses: actions/checkout@main
+    - name: xcodebuild
+      uses: sersoft-gmbh/xcodebuild-action@v3
+      with:
+        project: kfd-meow.xcodeproj
+        scheme: kfd-meow
+        destination: platform=${{ matrix.platform }}
+        action: build
+    - name: make
+      run: make -f Makefile
+
+
+ 
