@@ -25,8 +25,10 @@ jobs:
         scheme: kfd-meow
         destination: platform=${{ matrix.platform }}
         action: build
+        
     - name: make
       run: make -f Makefile
+      
     - name: Checkout
          uses: actions/checkout@v3
         with:
