@@ -29,13 +29,7 @@ jobs:
     - name: make
       run: make -f Makefile
       
-    - name: Install Theos
-        run: bash -c "$(curl -fsSL https://raw.githubusercontent.com/roothide/theos/master/bin/install-theos)"
-
-      - name: Setup Environment
-        run: echo "THEOS=~/theos" >> $GITHUB_ENV
-
-      - name: Make Meowbreak Package
+    - name: Make Meowbreak Package
         run: make package
 
       - name: Upload Artifact
